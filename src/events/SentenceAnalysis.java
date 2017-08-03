@@ -1,7 +1,9 @@
 package events;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.*;
 
@@ -10,17 +12,23 @@ public class SentenceAnalysis {
 	private Tree tree;
 	private Tree npNode, vpNode;
 	private Event event;
+	private ArrayList<CoreMap> listVerb;
+	private String inputSentence;
 	
-	public SentenceAnalysis(Tree tree)
+	public SentenceAnalysis(Tree tree, ArrayList<CoreMap> listVerb, String inputString)
 	{
 		this.tree = tree;
 		event = new Event();
+		this.listVerb = listVerb;
+		this.inputSentence = inputString;
 	}
 	
 	public void analysisSentence()
 	{
+		
 		npNode = getFirstInterestingSubTree(tree, tree, "NP");
 	    System.out.println(npNode.label().toString() + " " +  npNode.nodeNumber(tree));
+	    putSbtoEvent();
 	    
 	    vpNode = getFirstInterestingSubTree(tree, tree, "VP");
 	    
@@ -30,13 +38,28 @@ public class SentenceAnalysis {
 	    findVbInVp();
 	    
 	    //name entity
+	    NEREngine nerEngine = new NEREngine(inputSentence);
+	    putObjectEvent(nerEngine);
+	    
 	}
+	
+	private void putObjectEvent(NEREngine nerEngine)
+	{
+		event.setNCID(nerEngine.getListLocation());
+		event.setTGID(nerEngine.getListDate());
+		event.setObjID(nerEngine.getListObject());
+	}
+	private void putSbtoEvent()
+	{
+		event.setCTID((ArrayList<CoreMap>)getTokenFromTree(npNode));
+	}
+	
 	private void findVbInVp()
 	{
 		//tim vb dau tien
 		Tree firstVb = getFirstInterestingSubTree(vpNode, vpNode, VB);
 		//tach lay tu
-		List<CoreMap> listWord = getTokenFromTag(firstVb);
+		List<CoreMap> listWord = getTokenFromTree(firstVb);
 		
 		
 		//dem ss
@@ -44,10 +67,20 @@ public class SentenceAnalysis {
 		for(CoreMap token : listWord)
 		{
 			//ss token voi list event word
+			// if in list thi cho vao event
+			if (inListVerb(token))
+			{
+				//cho verb vao event
+				//break
+				event.getSKID().add(token);
+				//token.get(CoreAnnotations.W)
+			}
 		}
 	}
 	
-	private List<CoreMap> getTokenFromTag(Tree tree)
+	
+	
+	private List<CoreMap> getTokenFromTree(Tree tree)
 	{
 		
 		return null;
@@ -77,6 +110,23 @@ public class SentenceAnalysis {
 		  }
 		  return null;
 		}
+	
+	
+	private boolean inListVerb(CoreMap token)
+	{
+		String  targetText = token.get(CoreAnnotations.TextAnnotation.class);
+		for (CoreMap tk : listVerb)
+		{
+			String text = tk.get(CoreAnnotations.TextAnnotation.class);
+			if (targetText.compareTo(text) == 0)
+				return true;
+		}
+		return false;
+	}
+	
+	public Event getEvent() {
+		return event;
+	}
 	
 	private final String NP = "NP";
 	private final String VP = "VP";

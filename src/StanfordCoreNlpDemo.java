@@ -14,6 +14,7 @@ import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.trees.*;
 import edu.stanford.nlp.util.*;
 import events.SentenceAnalysis;
+import events.TableEvent;
 
 /** This class demonstrates building and using a Stanford CoreNLP pipeline. */
 public class StanfordCoreNlpDemo {
@@ -46,11 +47,15 @@ public class StanfordCoreNlpDemo {
     props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, sentiment");
 
     StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-
+    
+    // 
+    
     // Initialize an Annotation with some text to be annotated. The text is the argument to the constructor.
     Annotation annotation;
     if (args.length > 0) {
       annotation = new Annotation(IOUtils.slurpFileNoExceptions(args[0]));
+      //System.out.println("Start here");
+      //System.out.println(annotation.toString());
     } else {
       annotation = new Annotation("Kosgi Santosh sent an email to Stanford University. He didn't get a reply.");
     }
@@ -59,7 +64,7 @@ public class StanfordCoreNlpDemo {
     pipeline.annotate(annotation);
 
     // this prints out the results of sentence analysis to file(s) in good formats
-    pipeline.prettyPrint(annotation, out);
+    /*pipeline.prettyPrint(annotation, out);
     if (xmlOut != null) {
       pipeline.xmlPrint(annotation, xmlOut);
     }
@@ -70,6 +75,7 @@ public class StanfordCoreNlpDemo {
     out.println();
     out.println("The top level annotation");
     out.println(annotation.toShorterString());
+    */
     out.println();
 
     // An Annotation is a Map with Class keys for the linguistic analysis types.
@@ -77,34 +83,37 @@ public class StanfordCoreNlpDemo {
     // For instance, this gets the parse tree of the first sentence in the text.
     
     List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
-    if (sentences != null && ! sentences.isEmpty()) {
-      CoreMap sentence = sentences.get(0);
-      out.println("The keys of the first sentence's CoreMap are:");
-      out.println(sentence.keySet());
-      out.println();
-      out.println("The first sentence is:");
-      out.println(sentence.toShorterString());
-      out.println();
-      out.println("The first sentence tokens are:");
-      for (CoreMap token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-        out.println(token.toShorterString());
-        out.println(token.get(CoreAnnotations.TextAnnotation.class));
-      }
-      Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
-      out.println();
-      out.println("The first sentence parse tree is:");
-      tree.pennPrint(out);
-      
-      System.out.println(tree.size());
-      
+    //start FOR here - make TableEvent
+    TableEvent tableEvent = new TableEvent();
+    if (sentences != null && ! sentences.isEmpty())
+	    for (CoreMap sentence : sentences){
+	    {
+	    	  
+		     // out.println("The first sentence tokens are:");
+		      for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+		        out.println(token.toShorterString());
+		        out.println(token.get(CoreAnnotations.TextAnnotation.class));
+		               
+		      }
+		      
+		      Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
+		      SentenceAnalysis senAna = new SentenceAnalysis(tree, tableEvent.getListVerb(), annotation.toString());
+		      senAna.analysisSentence();
+		      tableEvent.getTableEvent().add(senAna.getEvent());
+		      //out.println();
+		      //out.println("The first sentence parse tree is:");
+		      //tree.pennPrint(out);
+		      
+		      
+	     }
       /*for (int i = 0; i < tree.size(); i++)
       {
     	  System.out.println(tree.getChild(0).getChild(i).label());
       }*/
       
-      SentenceAnalysis senAna = new SentenceAnalysis(tree);
-      senAna.analysisSentence();
-      
+     // SentenceAnalysis senAna = new SentenceAnalysis(tree, );
+      //senAna.analysisSentence();
+    //  
       
       /*
       out.println();
@@ -137,7 +146,7 @@ public class StanfordCoreNlpDemo {
       out.println("The first sentence overall sentiment rating is " + sentence.get(SentimentCoreAnnotations.SentimentClass.class));
     */
     }
-      
+    out.println("Done");
     IOUtils.closeIgnoringExceptions(out);
     IOUtils.closeIgnoringExceptions(xmlOut);
   }
