@@ -12,6 +12,7 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.trees.*;
+import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.*;
 import events.SentenceAnalysis;
 import events.TableEvent;
@@ -64,7 +65,8 @@ public class StanfordCoreNlpDemo {
     pipeline.annotate(annotation);
 
     // this prints out the results of sentence analysis to file(s) in good formats
-    /*pipeline.prettyPrint(annotation, out);
+   // pipeline.prettyPrint(annotation, out);
+    /*
     if (xmlOut != null) {
       pipeline.xmlPrint(annotation, xmlOut);
     }
@@ -86,17 +88,18 @@ public class StanfordCoreNlpDemo {
     //start FOR here - make TableEvent
     TableEvent tableEvent = new TableEvent();
     if (sentences != null && ! sentences.isEmpty())
-	    for (CoreMap sentence : sentences){
+	    for (CoreMap sentence : sentences)
 	    {
 	    	  
-		     // out.println("The first sentence tokens are:");
-		      for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+		      System.out.println("The first sentence tokens are:");
+		      for (CoreMap token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
 		        out.println(token.toShorterString());
-		        out.println(token.get(CoreAnnotations.TextAnnotation.class));
+		        System.out.println(token.get(CoreAnnotations.TextAnnotation.class));
 		               
 		      }
 		      
 		      Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
+		      tree.pennPrint();
 		      SentenceAnalysis senAna = new SentenceAnalysis(tree, tableEvent.getListVerb(), annotation.toString());
 		      senAna.analysisSentence();
 		      tableEvent.getTableEvent().add(senAna.getEvent());
@@ -106,18 +109,14 @@ public class StanfordCoreNlpDemo {
 		      
 		      
 	     }
-      /*for (int i = 0; i < tree.size(); i++)
-      {
-    	  System.out.println(tree.getChild(0).getChild(i).label());
-      }*/
-      
-     // SentenceAnalysis senAna = new SentenceAnalysis(tree, );
-      //senAna.analysisSentence();
-    //  
-      
+	    
+	  tableEvent.printEvent();
       /*
       out.println();
       out.println("The first sentence basic dependencies are:");
+      CoreMap sentence = sentences.get(0);
+      Tree tree = sentence.get(TreeAnnotation.class);
+      tree.pennPrint();
       out.println(sentence.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class).toString(SemanticGraph.OutputFormat.LIST));
       out.println("The first sentence collapsed, CC-processed dependencies are:");
       SemanticGraph graph = sentence.get(SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation.class);
@@ -144,9 +143,9 @@ public class StanfordCoreNlpDemo {
       out.println();
 
       out.println("The first sentence overall sentiment rating is " + sentence.get(SentimentCoreAnnotations.SentimentClass.class));
-    */
-    }
-    out.println("Done");
+    
+    
+    out.println("Done");*/
     IOUtils.closeIgnoringExceptions(out);
     IOUtils.closeIgnoringExceptions(xmlOut);
   }

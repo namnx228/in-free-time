@@ -46,5 +46,19 @@ public class Event {
 		ObjID = objID;
 	}
 	
+	private void Print(Object object)
+	{
+		System.out.println(object);
+	}
+	
+	public void printEvent()
+	{
+		Print("Su kien: " + SKID.toString());
+		Print("Chu the: " + CTID.toString());
+		Print("Thoi gian: " + TGID.toString());
+		Print("Dia diem: " + NCID.toString() );
+		Print("Cac thu khac " + ObjID.toString());
+	}
+	
 	
 }

@@ -37,7 +37,11 @@ public class TableEvent {
 		Annotation sent = new Annotation(IOUtils.slurpFileNoExceptions(verbfile));
 		listVerb = (ArrayList<CoreMap>) sent.get(CoreAnnotations.SentencesAnnotation.class);		
 	}
-	
+	public void printEvent()
+	{
+		for (Event event : tableEvent)
+			event.printEvent();
+	}
 	private final String verbfile = "verbList.txt";
 
 }

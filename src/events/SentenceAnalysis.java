@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.*;
 
@@ -25,7 +26,6 @@ public class SentenceAnalysis {
 	
 	public void analysisSentence()
 	{
-		
 		npNode = getFirstInterestingSubTree(tree, tree, "NP");
 	    System.out.println(npNode.label().toString() + " " +  npNode.nodeNumber(tree));
 	    putSbtoEvent();
@@ -78,20 +78,25 @@ public class SentenceAnalysis {
 		}
 	}
 	
-	
-	
 	private List<CoreMap> getTokenFromTree(Tree tree)
 	{
-		
-		return null;
+		List<Tree> children = tree.getLeaves();
+		List<CoreMap> result = new ArrayList<>();
+		for (Tree child : children)
+		{
+			CoreLabel tmp = new CoreLabel(child);
+			result.add(tmp);
+		}
+		return result;
 	}
+	
 	
 	private Tree getFirstInterestingSubTree(Tree original, Tree tree, String targetLabel) {
 		  if (tree == null) {
 		    return null;
 		  }
 		  String label = tree.label().toString();
-		  if (label.compareTo(targetLabel) == 0) {
+		  if (label.matches(targetLabel)) {
 		    return tree;
 		  } else if (!tree.isLeaf()) {
 		    Tree originalTree = tree;
@@ -114,7 +119,7 @@ public class SentenceAnalysis {
 	
 	private boolean inListVerb(CoreMap token)
 	{
-		String  targetText = token.get(CoreAnnotations.TextAnnotation.class);
+		String  targetText = ((CoreLabel)token).word();
 		for (CoreMap tk : listVerb)
 		{
 			String text = tk.get(CoreAnnotations.TextAnnotation.class);
@@ -130,6 +135,6 @@ public class SentenceAnalysis {
 	
 	private final String NP = "NP";
 	private final String VP = "VP";
-	private final String VB = "VB";
+	private final String VB = "VB\\w*";
 	
 }
