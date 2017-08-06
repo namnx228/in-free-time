@@ -13,10 +13,10 @@ public class SentenceAnalysis {
 	private Tree tree;
 	private Tree npNode, vpNode;
 	private Event event;
-	private ArrayList<CoreMap> listVerb;
+	private ArrayList<String> listVerb;
 	private String inputSentence;
 	
-	public SentenceAnalysis(Tree tree, ArrayList<CoreMap> listVerb, String inputString)
+	public SentenceAnalysis(Tree tree, ArrayList<String> listVerb, String inputString)
 	{
 		this.tree = tree;
 		event = new Event();
@@ -119,10 +119,10 @@ public class SentenceAnalysis {
 	
 	private boolean inListVerb(CoreMap token)
 	{
-		String  targetText = ((CoreLabel)token).word();
-		for (CoreMap tk : listVerb)
+		String  targetText = ((CoreLabel)token).value();
+		for (String text : listVerb)
 		{
-			String text = tk.get(CoreAnnotations.TextAnnotation.class);
+			
 			if (targetText.compareTo(text) == 0)
 				return true;
 		}

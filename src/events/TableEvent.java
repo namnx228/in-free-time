@@ -15,17 +15,17 @@ import java.util.Properties;
 public class TableEvent {
 	
 	private ArrayList<Event> tableEvent;
-	private ArrayList<CoreMap> listVerb;
+	private ArrayList<String> listVerb;
 	public void setTableEvent(ArrayList<Event> tableEvent) {
 		this.tableEvent = tableEvent;
 	}
 	public ArrayList<Event> getTableEvent() {
 		return tableEvent;
 	}
-	public ArrayList<CoreMap> getListVerb() {
+	public ArrayList<String> getListVerb() {
 		return listVerb;
 	}
-	public void setListVerb(ArrayList<CoreMap> listVerb) {
+	public void setListVerb(ArrayList<String> listVerb) {
 		this.listVerb = listVerb;
 	}
 	
@@ -35,7 +35,10 @@ public class TableEvent {
 		//nhap verb tu file
 		listVerb = new ArrayList<>();
 		Annotation sent = new Annotation(IOUtils.slurpFileNoExceptions(verbfile));
-		listVerb = (ArrayList<CoreMap>) sent.get(CoreAnnotations.SentencesAnnotation.class);		
+		for(String word :  sent.toString().split(" "))
+		{
+			listVerb.add(word);
+		}
 	}
 	public void printEvent()
 	{
