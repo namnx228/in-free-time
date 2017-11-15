@@ -91,8 +91,8 @@ public class StanfordCoreNlpDemo {
     if (sentences != null && ! sentences.isEmpty())
 	    for (CoreMap sentence : sentences)
 	    {
-	    	  
-		      System.out.println("The first sentence tokens are:");
+	    	  //System.out.println(sentence.get(CoreAnnotations.TextAnnotation.class));
+		    //  System.out.println("The first sentence tokens are:");
 		      for (CoreMap token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
 		        out.println(token.toShorterString());
 		        System.out.println(token.get(CoreAnnotations.TextAnnotation.class));
@@ -101,11 +101,14 @@ public class StanfordCoreNlpDemo {
 		      
 		      Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
 		      tree.pennPrint();
-		      SentenceAnalysis senAna = new SentenceAnalysis(tree, tableEvent.getListVerb(), annotation.toString());
+		      SentenceAnalysis senAna = new SentenceAnalysis(tree, tableEvent.getListVerb(), sentence.get(CoreAnnotations.TextAnnotation.class));
 		      senAna.analysisSentence();
-		      Event event = senAna.getEvent();
-		      List<CoreMap> c = event.getSKID();
-		      tableEvent.getTableEvent().add(senAna.getEvent());
+		      
+		      Event event = senAna.getEvent(); //(2)
+		      ArrayList<CoreLabel> location = event.getNCID();
+		      ArrayList<CoreMap> sk = event.getSKID();
+		      if (sk != null && !sk.isEmpty())
+		    	tableEvent.getTableEvent().add(senAna.getEvent());
 		      //out.println();
 		      //out.println("The first sentence parse tree is:");
 		      //tree.pennPrint(out);

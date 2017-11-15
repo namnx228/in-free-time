@@ -26,6 +26,7 @@ public class SentenceAnalysis {
 	
 	public void analysisSentence()
 	{
+		event = new Event(); // (1)
 		npNode = getFirstInterestingSubTree(tree, tree, "NP");
 	    System.out.println(npNode.label().toString() + " " +  npNode.nodeNumber(tree));
 	    putSbtoEvent();

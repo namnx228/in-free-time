@@ -18,19 +18,22 @@ import java.io.IOException;
 
 public class NEREngine {
 	
-	private String inputSentence;
+	
 	
 	private ArrayList<CoreLabel> listLocation, listDate, listObject;
+	private static AbstractSequenceClassifier<CoreLabel> classifier;
 
     public NEREngine(String inputSentence) {
 
+    	if (classifier == null)
+    		 classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
 		try 
 		{
 		    listLocation = new ArrayList<>();
 		    listDate = new ArrayList<>();
 		    listObject = new ArrayList<>();
 		      
-		    AbstractSequenceClassifier<CoreLabel> classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
+		   
 		
 		   
 		    if (true) {
