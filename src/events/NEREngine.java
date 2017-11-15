@@ -30,22 +30,23 @@ public class NEREngine {
 		    listDate = new ArrayList<>();
 		    listObject = new ArrayList<>();
 		      
-		    AbstractSequenceClassifier classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
+		    AbstractSequenceClassifier<CoreLabel> classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
 		
 		   
 		    if (true) {
-		      List<CoreLabel> sentence = classifier.classify(inputSentence);
-		      for (CoreLabel word : sentence) {
-		     
-		    	  if (word.get(AnswerAnnotation.class).compareTo(LOCATION) == 0){
-		        		listLocation.add(word);
-		    	  }
-		    	  else if (word.get(AnswerAnnotation.class).compareTo(DATE) == 0)
-		    		  listDate.add(word);
-		    	  else if (word.get(AnswerAnnotation.class).compareTo("0") == 0)
-		    		  listObject.add(word);
-			
-		      }
+		      List<List<CoreLabel> > sentences = classifier.classify(inputSentence);
+		      for (List<CoreLabel> sentence : sentences)
+			      for (CoreLabel word : sentence) {
+			     
+			    	  if (word.get(AnswerAnnotation.class).compareTo(LOCATION) == 0){
+			        		listLocation.add(word);
+			    	  }
+			    	  else if (word.get(AnswerAnnotation.class).compareTo(DATE) == 0)
+			    		  listDate.add(word);
+			    	  else if (word.get(AnswerAnnotation.class).compareTo("0") == 0)
+			    		  listObject.add(word);
+				
+			      }
 		    }
 		}
 		catch (Exception e)

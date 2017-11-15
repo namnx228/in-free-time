@@ -14,6 +14,7 @@ import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.trees.*;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.*;
+import events.Event;
 import events.SentenceAnalysis;
 import events.TableEvent;
 
@@ -102,6 +103,8 @@ public class StanfordCoreNlpDemo {
 		      tree.pennPrint();
 		      SentenceAnalysis senAna = new SentenceAnalysis(tree, tableEvent.getListVerb(), annotation.toString());
 		      senAna.analysisSentence();
+		      Event event = senAna.getEvent();
+		      List<CoreMap> c = event.getSKID();
 		      tableEvent.getTableEvent().add(senAna.getEvent());
 		      //out.println();
 		      //out.println("The first sentence parse tree is:");

@@ -11,6 +11,15 @@ public class Event {
 	private ArrayList<CoreMap> SKID, CTID;
 	private ArrayList<CoreLabel> TGID, NCID, ObjID;
 	
+	public Event()
+	{
+		SKID = new ArrayList<>();
+		CTID = new ArrayList<>();
+		TGID = new ArrayList<>();
+		NCID = new ArrayList<>();
+		ObjID = new ArrayList<>();
+		
+	}
 	
 	public ArrayList<CoreMap> getCTID() {
 		return CTID;
@@ -53,11 +62,17 @@ public class Event {
 	
 	public void printEvent()
 	{
-		Print("Su kien: " + SKID.toString());
-		Print("Chu the: " + CTID.toString());
-		Print("Thoi gian: " + TGID.toString());
-		Print("Dia diem: " + NCID.toString() );
-		Print("Cac thu khac " + ObjID.toString());
+		try{
+			Print("Su kien: " + SKID.toString());
+			Print("Chu the: " + CTID.toString());
+			Print("Thoi gian: " + TGID.toString());
+			Print("Dia diem: " + NCID.toString() );
+			Print("Cac thu khac " + ObjID.toString());
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			
+		}
 	}
 	
 	
