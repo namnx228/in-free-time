@@ -1,6 +1,10 @@
 
 import java.io.*;
+import java.time.LocalDateTime;
+
 import java.util.*;
+
+import javax.swing.JTable;
 
 import edu.stanford.nlp.coref.CorefCoreAnnotations;
 
@@ -8,20 +12,27 @@ import edu.stanford.nlp.coref.data.CorefChain;
 import edu.stanford.nlp.io.*;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.pipeline.*;
+import edu.stanford.nlp.time.Timex;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
+import edu.stanford.nlp.time.SUTime.*;
+import edu.stanford.nlp.time.TimeAnnotations;
+import edu.stanford.nlp.time.TimeAnnotator;
+import edu.stanford.nlp.time.TimeExpression;
+
 import edu.stanford.nlp.trees.*;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.*;
-import events.Event;
-import events.SentenceAnalysis;
-import events.TableEvent;
+
+import events.*;
 
 /** This class demonstrates building and using a Stanford CoreNLP pipeline. */
 public class StanfordCoreNlpDemo {
 
   /** Usage: java -cp "*" StanfordCoreNlpDemo [inputFile [outputTextFile [outputXmlFile]]] */
+  
+  
   public static void main(String[] args) throws IOException {
     // set up optional output files
     PrintWriter out;
@@ -46,115 +57,129 @@ public class StanfordCoreNlpDemo {
 
     // Add in sentiment
     Properties props = new Properties();
-    props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, sentiment");
-
+    props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner,parse");//, dcoref, sentiment");
+  
+   // props.setProperty("ner.useSUTime", "0");
+  
+    
     StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+    
+    
+    //----------------------SUTime-section-------------------------------------------
+    //String defs_sutime = "/home/namxuan/workspace/eclipse-workspace/mebong/MeBong/sutime/defs.sutime.txt";
+    String defs_sutime = "./sutime/defs.sutime.txt";
+	String holiday_sutime = "./sutime/english.holidays.sutime.txt";
+	String _sutime = "./sutime/english.sutime.txt";
+	
+	Properties propSUTime = new Properties();
+	String sutimeRules = defs_sutime + "," + holiday_sutime
+				+ "," + _sutime;
+	propSUTime.setProperty("sutime.rules", sutimeRules);
+	propSUTime.setProperty("sutime.binders", "0");
+	propSUTime.setProperty("sutime.markTimeRanges", "true");
+	propSUTime.setProperty("sutime.includeRange", "true");
+	pipeline.addAnnotator(new TimeAnnotator("sutime", propSUTime));
+	
+    
+    //----------------------end-SUTime-section---------------------------------------
     
     // 
     
     // Initialize an Annotation with some text to be annotated. The text is the argument to the constructor.
     Annotation annotation;
-    if (args.length > 0) {
-      annotation = new Annotation(IOUtils.slurpFileNoExceptions(args[0]));
-      //System.out.println("Start here");
-      //System.out.println(annotation.toString());
-    } else {
+    
+    if (args.length == 0) 
       annotation = new Annotation("Kosgi Santosh sent an email to Stanford University. He didn't get a reply.");
+    
+    ArrayList<String> listVerb = new ArrayList<>();
+	Annotation sent = new Annotation(IOUtils.slurpFileNoExceptions(verbfile));
+	for(String word :  sent.toString().split(" "))
+	{
+		listVerb.add(word);
+	}
+	
+	EnterNews enter = new EnterNews();
+	System.out.println();
+	System.out.println("The best title is: " + enter.bestTitle());
+    System.out.println();
+    //for new
+    //can lay ket qua cua ham duoi day vao mot bien nao do
+    //ket qua gom co: cai bang(tableEvent can co them title)
+	ArrayList<TableEvent> listTableEvent = new ArrayList<>();
+    for (File news : enter.getListInput()) {
+    	TableEvent tableEvent = annotationProcessing(news.getName(), pipeline, listVerb);
+    	listTableEvent.add(tableEvent);
+    	tableEvent.printTableEvent();
     }
-
-    // run all the selected Annotators on this text
-    pipeline.annotate(annotation);
-
-    // this prints out the results of sentence analysis to file(s) in good formats
-   // pipeline.prettyPrint(annotation, out);
+    
     /*
-    if (xmlOut != null) {
-      pipeline.xmlPrint(annotation, xmlOut);
-    }
-
-    // Access the Annotation in code
-    // The toString() method on an Annotation just prints the text of the Annotation
-    // But you can see what is in it with other methods like toShorterString()
-    out.println();
-    out.println("The top level annotation");
-    out.println(annotation.toShorterString());
-    */
-    out.println();
-
-    // An Annotation is a Map with Class keys for the linguistic analysis types.
-    // You can get and use the various analyses individually.
-    // For instance, this gets the parse tree of the first sentence in the text.
+    for (TableEvent tableEvent:listTableEvent) {
+    	System.out.println(tableEvent.getTitle());
+    	tableEvent.printEvent();
+    	System.out.println(" ");
+    	
+    	
+    }*/
     
-    List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
-    //start FOR here - make TableEvent
-    TableEvent tableEvent = new TableEvent();
-    if (sentences != null && ! sentences.isEmpty())
-	    for (CoreMap sentence : sentences)
-	    {
-	    	  //System.out.println(sentence.get(CoreAnnotations.TextAnnotation.class));
-		    //  System.out.println("The first sentence tokens are:");
-		      for (CoreMap token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-		        out.println(token.toShorterString());
-		        System.out.println(token.get(CoreAnnotations.TextAnnotation.class));
-		               
-		      }
-		      
-		      Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
-		      tree.pennPrint();
-		      SentenceAnalysis senAna = new SentenceAnalysis(tree, tableEvent.getListVerb(), sentence.get(CoreAnnotations.TextAnnotation.class));
-		      senAna.analysisSentence();
-		      
-		      Event event = senAna.getEvent(); //(2)
-		      ArrayList<CoreLabel> location = event.getNCID();
-		      ArrayList<CoreMap> sk = event.getSKID();
-		      if (sk != null && !sk.isEmpty())
-		    	tableEvent.getTableEvent().add(senAna.getEvent());
-		      //out.println();
-		      //out.println("The first sentence parse tree is:");
-		      //tree.pennPrint(out);
-		      
-		      
-	     }
-	    
-	  tableEvent.printEvent();
-      /*
-      out.println();
-      out.println("The first sentence basic dependencies are:");
-      CoreMap sentence = sentences.get(0);
-      Tree tree = sentence.get(TreeAnnotation.class);
-      tree.pennPrint();
-      out.println(sentence.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class).toString(SemanticGraph.OutputFormat.LIST));
-      out.println("The first sentence collapsed, CC-processed dependencies are:");
-      SemanticGraph graph = sentence.get(SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation.class);
-      out.println(graph.toString(SemanticGraph.OutputFormat.LIST));
-
-      // Access coreference. In the coreference link graph,
-      // each chain stores a set of mentions that co-refer with each other,
-      // along with a method for getting the most representative mention.
-      // Both sentence and token offsets start at 1!
-      out.println("Coreference information");
-      Map<Integer, CorefChain> corefChains =
-          annotation.get(CorefCoreAnnotations.CorefChainAnnotation.class);
-      if (corefChains == null) { return; }
-      for (Map.Entry<Integer,CorefChain> entry: corefChains.entrySet()) {
-        out.println("Chain " + entry.getKey());
-        for (CorefChain.CorefMention m : entry.getValue().getMentionsInTextualOrder()) {
-          // We need to subtract one since the indices count from 1 but the Lists start from 0
-          List<CoreLabel> tokens = sentences.get(m.sentNum - 1).get(CoreAnnotations.TokensAnnotation.class);
-          // We subtract two for end: one for 0-based indexing, and one because we want last token of mention not one following.
-          out.println("  " + m + ", i.e., 0-based character offsets [" + tokens.get(m.startIndex - 1).beginPosition() +
-                  ", " + tokens.get(m.endIndex - 2).endPosition() + ")");
-        }
-      }
-      out.println();
-
-      out.println("The first sentence overall sentiment rating is " + sentence.get(SentimentCoreAnnotations.SentimentClass.class));
+    generateFinalTable(listTableEvent);
     
-    
-    out.println("Done");*/
+    // run all the selected Annotators on this text
     IOUtils.closeIgnoringExceptions(out);
     IOUtils.closeIgnoringExceptions(xmlOut);
   }
   
+  
+  private static TableEvent annotationProcessing(String filename, StanfordCoreNLP pipeline, ArrayList<String> listVerb) {
+	  	Annotation annotation = new Annotation(IOUtils.slurpFileNoExceptions(INPUT_PATH + filename));
+	  	annotation.set(CoreAnnotations.DocDateAnnotation.class, LocalDateTime.now().toString());
+	    pipeline.annotate(annotation);   
+	    List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
+	    TableEvent tableEvent = new TableEvent(); 
+	    tableEvent.setTitle(filename);
+	    if (sentences != null && ! sentences.isEmpty())
+		    for (CoreMap sentence : sentences)
+		    {			      
+			      Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
+			      SentenceAnalysis senAna = new SentenceAnalysis(tree, listVerb,sentence);
+			      senAna.analysisSentence();
+			      /*for (CoreMap token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+			    	//  System.out.println(token.toShorterString());
+			    	  //System.out.println(token.get(CoreAnnotations.An.class));
+			    	  
+			      }*/
+			      //sentence.get(TreeCoreAnnotations.TreeAnnotation.class).pennPrint();
+			      
+			      Event event = senAna.getEvent(); //(2)
+			      ArrayList<CoreMap> sk = event.getSKID();
+			      if (sk != null && !sk.isEmpty())
+			    	tableEvent.getTableEvent().add(senAna.getEvent());      
+		     }
+		    
+		  //tableEvent.printEvent();
+		  //GroupList groupList = new GroupList(tableEvent);
+		  //ArrayList<Event> bestEvents = groupList.getBest();
+		  //printBestEvent(bestEvents);
+		  
+		  //Title title = new Title();
+		  //System.out.println("Best title: " + title.getBestTitle());
+		 // EnterNews enter = new EnterNews();
+		  //enter.printFilesName();
+	    return tableEvent;
+		  
+  }
+  private static void generateFinalTable(ArrayList<TableEvent> listTableEvent) {
+	  FinalTableEvent finalTable = new FinalTableEvent(listTableEvent);
+	  
+	  
+  }
+  private static final String verbfile = "verbList.txt";
+  private static final String INPUT_PATH = "text/input/";
+  
+  public  String coreMapToString(CoreMap cm) {
+	  String res = cm.get(CoreAnnotations.TextAnnotation.class);
+	  if (res == null)
+		  res = cm.toString();
+	  return res;
+  }
  
 }

@@ -3,16 +3,22 @@ package events;
 import edu.stanford.nlp.ie.crf.*;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
-import edu.stanford.nlp.ling.CoreLabel;
+
 import edu.stanford.nlp.ling.Word;
+import edu.stanford.nlp.time.SUTime.*;
+import edu.stanford.nlp.time.TimeAnnotations;
+import edu.stanford.nlp.time.TimeExpression;
+import edu.stanford.nlp.time.TimeExpression.Annotation;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.AnswerAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.io.IOException;
+
 
 
 
@@ -20,10 +26,12 @@ public class NEREngine {
 	
 	
 	
-	private ArrayList<CoreLabel> listLocation, listDate, listObject;
-	private static AbstractSequenceClassifier<CoreLabel> classifier;
+	private ArrayList<CoreMap> listLocation, listDate, listObject;
+	private static AbstractSequenceClassifier<CoreMap> classifier;
+	
 
-    public NEREngine(String inputSentence) {
+	/*
+    public NEREngine(CoreMap inputSentence) {
 
     	if (classifier == null)
     		 classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
@@ -37,18 +45,17 @@ public class NEREngine {
 		
 		   
 		    if (true) {
-		      List<List<CoreLabel> > sentences = classifier.classify(inputSentence);
-		      for (List<CoreLabel> sentence : sentences)
-			      for (CoreLabel word : sentence) {
-			     
-			    	  if (word.get(AnswerAnnotation.class).compareTo(LOCATION) == 0){
+		      List<List<CoreMap> > sentences = classifier.classify(inputSentence);
+		      for (List<CoreMap> sentence : sentences)
+			      for (CoreMap word : sentence) {
+			    	  String tmp = word.get(AnswerAnnotation.class);
+			    	  if (tmp.compareTo(LOCATION) == 0)
 			        		listLocation.add(word);
-			    	  }
-			    	  else if (word.get(AnswerAnnotation.class).compareTo(DATE) == 0)
+			    	  else if (tmp.compareTo(DATE) == 0 || tmp.compareTo(TIME) == 0 ) 
 			    		  listDate.add(word);
-			    	  else if (word.get(AnswerAnnotation.class).compareTo("0") == 0)
-			    		  listObject.add(word);
-				
+			    	  
+			    	  else if (tmp.compareTo("0") == 0)
+			    		  listObject.add(word);			
 			      }
 		    }
 		}
@@ -59,9 +66,55 @@ public class NEREngine {
 		
 	    System.out.println();
     }
+    
+    */
+	
+	public NEREngine(CoreMap inputSentence) {
+
+    	
+		try 
+		{
+		    listLocation = new ArrayList<>();
+		    listDate = new ArrayList<>();
+		    listObject = new ArrayList<>();
+		      
+		   
+	    
+		      
+		      for (CoreMap word : inputSentence.get(CoreAnnotations.TokensAnnotation.class))
+			      {
+			    	  String tmp = word.get(CoreAnnotations.NamedEntityTagAnnotation.class);
+			    	  if (tmp.compareTo(LOCATION) == 0)
+			        		listLocation.add(word);
+			    	  /*
+			    	  else if (tmp.compareTo(DATE) == 0 || tmp.compareTo(TIME) == 0 
+			    			  || tmp.compareTo(DURATION) == 0 || tmp.compareTo(SET) == 0) {
+			    		  listDate.add(word); }
+			    		  */
+			    		 
+			 
+			    	  
+			    	 
+			      }
+		      for (CoreMap wordTime : inputSentence.get(TimeAnnotations.TimexAnnotations.class)) {
+		    	  
+		    	  listDate.add(wordTime);
+		      }
+		      
+		    
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+	    System.out.println();
+    }
+	
+	
 /*out = classifier.classifyFile("inp.txt");
-for (List<CoreLabel> sentence : out) {
-  for (CoreLabel word : sentence) {
+for (List<CoreMap> sentence : out) {
+  for (CoreMap word : sentence) {
     System.out.print(word.word() + '/' + word.get(AnswerAnnotation.class) + ' ');
   }
   System.out.println();
@@ -69,18 +122,22 @@ for (List<CoreLabel> sentence : out) {
 
     
  
-    public ArrayList<CoreLabel> getListDate() {
+    public ArrayList<CoreMap> getListDate() {
 		return listDate;
 	}
-    public ArrayList<CoreLabel> getListLocation() {
+    public ArrayList<CoreMap> getListLocation() {
 		return listLocation;
 	}
-    public ArrayList<CoreLabel> getListObject() {
+    public ArrayList<CoreMap> getListObject() {
 		return listObject;
 	}
+ 
     
     private final String serializedClassifier = "edu/stanford/nlp/models/ner/english.muc.7class.distsim.crf.ser.gz";
     private final String LOCATION = "LOCATION";
     private final String DATE = "DATE";
+    private final String TIME = "TIME";
+    private final String DURATION = "DURATION";
+    private final String SET = "SET";
     
 }

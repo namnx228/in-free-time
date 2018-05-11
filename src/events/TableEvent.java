@@ -8,43 +8,77 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.pipeline.StanfordCoreNLPServer;
+import edu.stanford.nlp.trees.TreeCoreAnnotations;
+import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.*;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import GUI.Table;
+
 public class TableEvent {
 	
+	private String title;
 	private ArrayList<Event> tableEvent;
-	private ArrayList<String> listVerb;
+	
 	public void setTableEvent(ArrayList<Event> tableEvent) {
 		this.tableEvent = tableEvent;
 	}
 	public ArrayList<Event> getTableEvent() {
 		return tableEvent;
 	}
-	public ArrayList<String> getListVerb() {
-		return listVerb;
-	}
-	public void setListVerb(ArrayList<String> listVerb) {
-		this.listVerb = listVerb;
-	}
+	
 	
 	public TableEvent()
 	{
+		title = "";
 		tableEvent = new ArrayList<>();
 		//nhap verb tu file
-		listVerb = new ArrayList<>();
-		Annotation sent = new Annotation(IOUtils.slurpFileNoExceptions(verbfile));
-		for(String word :  sent.toString().split(" "))
-		{
-			listVerb.add(word);
-		}
+		
+		
 	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	public String getTitle() {
+		return title;
+	}
+	
+	private void Print(String input) {
+		System.out.println(input);
+	}
+	
+	public void printTableEvent() {
+		Print("\n");
+		Print("Doc:" + title);
+		
+		for(int i = 1; i <= tableEvent.size(); i++) {
+			Print("");
+			Print("Su Kien " + i + ":");
+			Event e = tableEvent.get(i-1);
+			//e.getSentence().get(TreeCoreAnnotations.TreeAnnotation.class).pennPrint();
+			Print("CTID: " + e.printCTID());
+			Print("SKID: " + e.printSKID());
+			Print("TGID: " + e.printTGID());
+			Print("NCID: " + e.printNCID());
+			Print("ObjID: " + e.printObjID());
+			Print("OtherID: " + e.printOtherId());
+		}
+		//Table table = new Table(this);
+	}
+	
 	public void printEvent()
 	{
-		for (Event event : tableEvent)
+		for (Event event : tableEvent) {
+			
 			event.printEvent();
+			
+		}
 	}
-	private final String verbfile = "verbList.txt";
+	public ArrayList<Event> getEvent()
+	{
+		return tableEvent;
+	}
+	
 
 }
