@@ -1,2 +1,1 @@
-java -mx5g -cp .\*:.\bin\demo.jar StanfordCoreNlpDemo inp.txt
-
+java -mx5g -cp .\*:.\gui-library\*:.\bin\demo.jar MeBongGUI
