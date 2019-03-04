@@ -1,0 +1,24 @@
+Trong file text này em sẽ hướng dẫn anh cách cài bản demo của ứng dụng POCAD-SNORT
+- Giải nén bộ cài, đặt vào một thư mục nào đó anh muốn(chú ý là nên đặt ở thư mục của ubuntu(/home/tuananh/...), đặt ở thư mục của window có thể sẽ gây ra lỗi)
+- Lưu đường dẫn tới thư mục đó vào biến, rồi lưu vào file ~/.bashrc. Cách làm:
+	Mở file ~/.bashrc lên, chèn dòng những này vào cuối file: 
+	SNORT_PATH=/path/to/snort-2.9.9.0
+	export SNORT_PATH
+	alias snort=$SNORT_PATH/build/bin/snort
+	save, đóng file lại, rồi chạy lệnh source ~/.bashrc
+- Sửa file snort.conf
+	Sửa chỗ HOME_NET từ any -> IP của anh + /24
+		VD: 192.168.1.1/24
+	Các chỗ .../snort-2.9.9.0, ... sửa thành đường dẫn đến snort (đường dẫn đầy đủ anh nhé)
+	Thay thế file /etc/snort/snort.conf = file này
+- Nếu chưa có thì anh tạo thư mục /var/log/snort
+- Nếu bị lỗi chưa có thư viện nghttp2, thì anh cài cái đó vào. Cách cài:
+	sudo apt-get install -y autoconf libtool pkg-config
+  cd ~/snort_src
+  wget https://github.com/nghttp2/nghttp2/releases/download/v1.17.0/nghttp2-1.17.0.tar.gz
+  tar -xzvf nghttp2-1.17.0.tar.gz
+  cd nghttp2-1.17.0
+  autoreconf -i --force
+  automake
+  autoconf
+  ./configure --enable-lib-only
